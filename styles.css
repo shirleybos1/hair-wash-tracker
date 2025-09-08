@@ -382,24 +382,30 @@ main::after {
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
+    gap: 1px;
     background: #f0f0f0;
     border-radius: 8px;
-    padding: 10px;
+    padding: 8px;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .calendar-day {
     background: white;
-    padding: 10px;
+    padding: 8px 4px;
     text-align: center;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-height: 40px;
+    min-height: 35px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     position: relative;
+    font-size: 0.9rem;
+    aspect-ratio: 1;
+    max-width: 100%;
 }
 
 .calendar-day:hover {
@@ -672,10 +678,23 @@ main::after {
     body {
         padding-top: env(safe-area-inset-top);
         padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
     }
     
     .container {
-        padding-top: 10px;
+        padding-top: 15px;
+        max-width: 100%;
+    }
+    
+    header {
+        margin-bottom: 20px;
+    }
+    
+    /* Prevent horizontal scrolling */
+    body, html {
+        overflow-x: hidden;
+        width: 100%;
     }
 }
 
@@ -692,10 +711,51 @@ main::after {
     }
 }
 
-/* Responsive */
+/* Mobile Optimizations */
 @media (max-width: 600px) {
     .container {
-        padding: 10px;
+        padding: 8px;
+        max-width: 100vw;
+    }
+    
+    main {
+        padding: 20px 15px;
+        margin: 0 5px;
+    }
+    
+    .calendar-section {
+        padding: 15px 10px;
+    }
+    
+    .calendar-grid {
+        gap: 1px;
+        padding: 5px;
+        max-width: calc(100vw - 60px);
+    }
+    
+    .calendar-day {
+        min-height: 30px;
+        padding: 4px 2px;
+        font-size: 0.8rem;
+        border-radius: 3px;
+    }
+    
+    .calendar-day.wash-day::after,
+    .calendar-day.event-day::after,
+    .calendar-day.scheduled-wash::after,
+    .calendar-day.multiple-events::after {
+        font-size: 10px;
+        top: 1px;
+        right: 1px;
+    }
+    
+    .calendar-header h2 {
+        font-size: 1.2rem;
+    }
+    
+    .btn-nav {
+        padding: 8px 12px;
+        font-size: 1.2rem;
     }
     
     .add-event {
@@ -704,16 +764,12 @@ main::after {
     
     .input {
         min-width: auto;
-    }
-    
-    .calendar-day {
-        min-height: 35px;
-        padding: 5px;
-        font-size: 0.9rem;
+        padding: 10px 12px;
     }
     
     .profile-grid {
         grid-template-columns: 1fr;
+        gap: 12px;
     }
     
     .profile-actions {
@@ -722,5 +778,54 @@ main::after {
     
     .profile-actions .btn {
         width: 100%;
+        margin: 5px 0;
+    }
+    
+    .btn-primary {
+        font-size: 1.1rem;
+        padding: 12px 20px;
+    }
+    
+    header h1 {
+        font-size: 2rem;
+    }
+    
+    .header-bubbles {
+        gap: 15px;
+    }
+    
+    .bubble {
+        font-size: 1.2rem;
+    }
+}
+
+/* Extra small screens (iPhone SE, etc.) */
+@media (max-width: 375px) {
+    .container {
+        padding: 5px;
+    }
+    
+    main {
+        padding: 15px 10px;
+        margin: 0 2px;
+    }
+    
+    .calendar-day {
+        min-height: 28px;
+        font-size: 0.75rem;
+        padding: 3px 1px;
+    }
+    
+    .calendar-grid {
+        max-width: calc(100vw - 40px);
+    }
+    
+    header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .btn-primary {
+        font-size: 1rem;
+        padding: 10px 15px;
     }
 }
