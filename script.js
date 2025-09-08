@@ -145,9 +145,11 @@ class HairWashTracker {
             const header = document.createElement('div');
             header.textContent = day;
             header.style.fontWeight = 'bold';
-            header.style.padding = '10px';
+            header.style.padding = '8px 4px';
             header.style.textAlign = 'center';
             header.style.background = '#f8f9fa';
+            header.style.fontSize = '0.8rem';
+            header.style.color = '#666';
             calendar.appendChild(header);
         });
 
