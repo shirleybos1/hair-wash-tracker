@@ -36,76 +36,15 @@
             </div>
         </header>
 
-        <main>
-            <!-- Profile Section -->
-            <section class="profile-section">
-                <div class="profile-header">
-                    <h3>💇‍♀️✨ My Hair Profile ✨💇‍♂️</h3>
-                    <button id="toggleProfile" class="btn btn-nav">🛁</button>
-                </div>
-                <div id="profileContent" class="profile-content hidden">
-                    <div class="profile-grid">
-                        <div class="profile-field">
-                            <label for="hairType">💁‍♀️ Hair Type:</label>
-                            <select id="hairType" class="input">
-                                <option value="">Select hair type</option>
-                                <option value="straight">Straight</option>
-                                <option value="wavy">Wavy</option>
-                                <option value="curly">Curly</option>
-                                <option value="coily">Coily</option>
-                            </select>
-                        </div>
-                        <div class="profile-field">
-                            <label for="hairLength">📏 Hair Length:</label>
-                            <select id="hairLength" class="input">
-                                <option value="">Select length</option>
-                                <option value="short">Short</option>
-                                <option value="medium">Medium</option>
-                                <option value="long">Long</option>
-                                <option value="very-long">Very Long</option>
-                            </select>
-                        </div>
-                        <div class="profile-field">
-                            <label for="washFrequency">🗓️ Preferred Wash Frequency:</label>
-                            <select id="washFrequency" class="input">
-                                <option value="">Select frequency</option>
-                                <option value="1">Every day</option>
-                                <option value="2">Every 2 days</option>
-                                <option value="3">Every 3 days</option>
-                                <option value="4">Twice a week</option>
-                                <option value="7">Once a week</option>
-                                <option value="10">Every 10 days</option>
-                                <option value="14">Every 2 weeks</option>
-                            </select>
-                        </div>
-                        <div class="profile-field">
-                            <label for="shampoo">🧴 Favorite Shampoo:</label>
-                            <input type="text" id="shampoo" placeholder="✨ e.g., Pantene Pro-V" class="input">
-                        </div>
-                        <div class="profile-field">
-                            <label for="conditioner">🌿 Favorite Conditioner:</label>
-                            <input type="text" id="conditioner" placeholder="💆‍♀️ e.g., Herbal Essences" class="input">
-                        </div>
-                        <div class="profile-field">
-                            <label for="treatments">🧖‍♀️ Hair Treatments:</label>
-                            <input type="text" id="treatments" placeholder="🥥 e.g., Hair mask, oil treatment" class="input">
-                        </div>
-                        <div class="profile-field full-width">
-                            <label for="notes">📝 Hair Care Notes:</label>
-                            <textarea id="notes" placeholder="💭 Any special notes about your hair care routine..." class="input textarea"></textarea>
-                        </div>
-                    </div>
-                    <div class="profile-actions">
-                        <button id="saveProfile" class="btn btn-primary">💾✨ Save Profile</button>
-                        <button id="autoSchedule" class="btn btn-secondary">🗓️🫧 Auto-Schedule Washes</button>
-                    </div>
-                </div>
-            </section>
-
+        <!-- Main App View -->
+        <div id="mainView">
             <!-- Quick Actions -->
             <section class="quick-actions">
                 <button id="washTodayBtn" class="btn btn-primary">
                     🛁✨ I Washed My Hair Today! ✨🫧
+                </button>
+                <button id="openProfileBtn" class="btn btn-secondary profile-btn">
+                    💇‍♀️ My Hair Profile
                 </button>
                 <div class="last-wash-info">
                     <span id="lastWashText">Last wash: Never logged</span>
@@ -140,6 +79,105 @@
                 <div id="eventsList" class="events-list"></div>
             </section>
         </main>
+        </div>
+
+        <!-- Profile Page View -->
+        <div id="profileView" class="page-view hidden">
+            <header class="profile-page-header">
+                <button id="backToMainBtn" class="btn btn-nav back-btn">← Back</button>
+                <h1>💇‍♀️✨ My Hair Profile ✨💇‍♂️</h1>
+            </header>
+            
+            <main class="profile-main">
+                <div class="profile-grid">
+                    <div class="profile-field">
+                        <label for="hairType">💁‍♀️ Hair Type:</label>
+                        <select id="hairType" class="input">
+                            <option value="">Select hair type</option>
+                            <option value="straight">Straight</option>
+                            <option value="wavy">Wavy</option>
+                            <option value="curly">Curly</option>
+                            <option value="coily">Coily</option>
+                        </select>
+                    </div>
+                    <div class="profile-field">
+                        <label for="hairLength">📏 Hair Length:</label>
+                        <select id="hairLength" class="input">
+                            <option value="">Select length</option>
+                            <option value="short">Short</option>
+                            <option value="medium">Medium</option>
+                            <option value="long">Long</option>
+                            <option value="very-long">Very Long</option>
+                        </select>
+                    </div>
+                    
+                    <!-- New Smart Frequency Range -->
+                    <div class="profile-field full-width">
+                        <label for="washFrequencyRange">🗓️ Smart Wash Frequency:</label>
+                        <div class="frequency-range">
+                            <div class="range-input">
+                                <label>Minimum days between washes:</label>
+                                <select id="minFrequency" class="input">
+                                    <option value="1">1 day</option>
+                                    <option value="2" selected>2 days</option>
+                                    <option value="3">3 days</option>
+                                    <option value="4">4 days</option>
+                                </select>
+                            </div>
+                            <div class="range-input">
+                                <label>Maximum days before must wash:</label>
+                                <select id="maxFrequency" class="input">
+                                    <option value="2">2 days</option>
+                                    <option value="3" selected>3 days</option>
+                                    <option value="4">4 days</option>
+                                    <option value="5">5 days</option>
+                                    <option value="7">7 days</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="frequency-help">
+                            💡 I don't like washing daily, but my hair gets gross after the max days. Always wash one day before events!
+                        </div>
+                    </div>
+                    
+                    <div class="profile-field full-width">
+                        <label>
+                            <input type="checkbox" id="eventWashReminder" checked>
+                            🎉 Always wash hair one day before events
+                        </label>
+                    </div>
+                    
+                    <div class="profile-field full-width">
+                        <label>
+                            <input type="checkbox" id="autoScheduleWashes" checked>
+                            🤖 Auto-schedule wash days based on frequency
+                        </label>
+                    </div>
+                    
+                    <div class="profile-field">
+                        <label for="shampoo">🧴 Favorite Shampoo:</label>
+                        <input type="text" id="shampoo" placeholder="✨ e.g., Pantene Pro-V" class="input">
+                    </div>
+                    <div class="profile-field">
+                        <label for="conditioner">🌿 Favorite Conditioner:</label>
+                        <input type="text" id="conditioner" placeholder="💆‍♀️ e.g., Herbal Essences" class="input">
+                    </div>
+                    <div class="profile-field">
+                        <label for="treatments">🧖‍♀️ Hair Treatments:</label>
+                        <input type="text" id="treatments" placeholder="🥥 e.g., Hair mask, oil treatment" class="input">
+                    </div>
+                    <div class="profile-field full-width">
+                        <label for="notes">📝 Hair Care Notes:</label>
+                        <textarea id="notes" placeholder="💭 Any special notes about your hair care routine..." class="input textarea"></textarea>
+                    </div>
+                </div>
+                
+                <div class="profile-actions">
+                    <button id="saveProfile" class="btn btn-primary">💾✨ Save Profile</button>
+                    <button id="autoSchedule" class="btn btn-secondary">🗓️🫧 Smart Auto-Schedule</button>
+                </div>
+            </main>
+        </div>
     </div>
 
     <!-- Notification Permission Modal -->
