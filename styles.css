@@ -114,43 +114,92 @@ main::after {
     animation: float 3s ease-in-out infinite reverse;
 }
 
-/* Profile Section */
-.profile-section {
-    margin-bottom: 30px;
-    padding: 20px;
-    background: linear-gradient(135deg, rgba(255, 182, 193, 0.1) 0%, rgba(255, 218, 185, 0.1) 100%);
-    border-radius: 20px;
-    border: 2px solid rgba(255, 182, 193, 0.2);
-    position: relative;
+/* Page Views */
+.page-view {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 25%, #ffd3a5 50%, #fd9853 100%);
+    z-index: 1000;
+    overflow-y: auto;
+    transition: transform 0.3s ease;
 }
 
-.profile-section::before {
-    content: '🛁';
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 1.5rem;
-    opacity: 0.2;
+.page-view.hidden {
+    transform: translateX(100%);
 }
 
-.profile-header {
+/* Profile Page */
+.profile-page-header {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 15px 20px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 15px;
+    gap: 15px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
-.profile-header h3 {
-    color: #333;
+.profile-page-header h1 {
+    font-size: 1.5rem;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
     margin: 0;
 }
 
-.profile-content {
-    transition: all 0.3s ease;
+.back-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 15px;
+    font-size: 1rem;
 }
 
-.profile-content.hidden {
-    display: none;
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.profile-main {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 25px 25px 0 0;
+    padding: 30px 20px;
+    margin-top: 10px;
+    min-height: calc(100vh - 100px);
+    backdrop-filter: blur(10px);
+}
+
+.profile-btn {
+    margin-top: 10px;
+    width: 100%;
+}
+
+/* Frequency Range Styling */
+.frequency-range {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.range-input label {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.frequency-help {
+    background: rgba(168, 230, 207, 0.2);
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: #333;
+    margin-top: 10px;
+    border-left: 3px solid #a8e6cf;
 }
 
 .profile-grid {
@@ -827,5 +876,51 @@ main::after {
     .btn-primary {
         font-size: 1rem;
         padding: 10px 15px;
+    }
+}/* F
+requency Range Styling */
+.frequency-range {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.range-input {
+    flex: 1;
+}
+
+.range-input label {
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+    color: #666;
+    font-weight: 500;
+}
+
+.frequency-help {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #f8f9ff 0%, #fff0f8 100%);
+    border-radius: 8px;
+    border-left: 3px solid #ff9a9e;
+    line-height: 1.4;
+}
+
+/* Mobile responsive frequency range */
+@media (max-width: 480px) {
+    .frequency-range {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .range-input label {
+        font-size: 0.85rem;
+    }
+    
+    .frequency-help {
+        font-size: 0.8rem;
+        padding: 0.5rem;
     }
 }
