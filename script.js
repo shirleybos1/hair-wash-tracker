@@ -26,6 +26,15 @@ class HairWashTracker {
             this.logWash(new Date());
         });
 
+        // Profile navigation
+        document.getElementById('openProfileBtn').addEventListener('click', () => {
+            this.showProfileView();
+        });
+
+        document.getElementById('backToMainBtn').addEventListener('click', () => {
+            this.showMainView();
+        });
+
         // Calendar navigation
         document.getElementById('prevMonth').addEventListener('click', () => {
             this.currentDate.setMonth(this.currentDate.getMonth() - 1);
@@ -52,16 +61,21 @@ class HairWashTracker {
         });
 
         // Profile events
-        document.getElementById('toggleProfile').addEventListener('click', () => {
-            this.toggleProfile();
-        });
-
         document.getElementById('saveProfile').addEventListener('click', () => {
             this.saveProfile();
         });
 
         document.getElementById('autoSchedule').addEventListener('click', () => {
-            this.autoScheduleWashes();
+            this.smartAutoScheduleWashes();
+        });
+
+        // Frequency range validation
+        document.getElementById('minFrequency').addEventListener('change', () => {
+            this.validateFrequencyRange();
+        });
+
+        document.getElementById('maxFrequency').addEventListener('change', () => {
+            this.validateFrequencyRange();
         });
     }
 
@@ -106,22 +120,29 @@ class HairWashTracker {
         nameInput.value = '';
         typeSelect.value = 'event';
 
-        // If it's an important event, suggest washing hair the day before
-        if (event.type === 'event') {
+        // Automatically schedule hair wash one day before events if enabled
+        if (event.type === 'event' && this.profile.eventWashReminder !== false) {
             const eventDate = new Date(event.date);
             const dayBefore = new Date(eventDate);
             dayBefore.setDate(dayBefore.getDate() - 1);
+            const dayBeforeStr = this.formatDate(dayBefore);
 
-            if (confirm(`Would you like to schedule a hair wash for ${this.formatDate(dayBefore)} (day before ${event.name})?`)) {
+            // Check if wash is already scheduled for that day
+            const existingWash = this.events.find(e =>
+                e.date === dayBeforeStr && e.type === 'wash'
+            );
+
+            if (!existingWash && dayBefore >= new Date()) {
                 this.events.push({
                     id: Date.now() + 1,
-                    date: this.formatDate(dayBefore),
+                    date: dayBeforeStr,
                     name: `Wash hair for ${event.name}`,
                     type: 'wash'
                 });
                 this.saveData();
                 this.renderCalendar();
                 this.renderEvents();
+                this.showSuccess(`🛁✨ Auto-scheduled hair wash for ${this.formatDisplayDate(dayBeforeStr)} (day before ${event.name})!`);
             }
         }
     }
@@ -368,22 +389,31 @@ class HairWashTracker {
         });
     }
 
-    toggleProfile() {
-        const profileContent = document.getElementById('profileContent');
-        const toggleBtn = document.getElementById('toggleProfile');
+    showProfileView() {
+        document.getElementById('mainView').style.display = 'none';
+        document.getElementById('profileView').classList.remove('hidden');
+        document.getElementById('profileView').style.display = 'block';
+    }
 
-        if (profileContent.classList.contains('hidden')) {
-            profileContent.classList.remove('hidden');
-            toggleBtn.textContent = '🫧';
-        } else {
-            profileContent.classList.add('hidden');
-            toggleBtn.textContent = '🛁';
+    showMainView() {
+        document.getElementById('profileView').style.display = 'none';
+        document.getElementById('profileView').classList.add('hidden');
+        document.getElementById('mainView').style.display = 'block';
+    }
+
+    validateFrequencyRange() {
+        const minDays = parseInt(document.getElementById('minFrequency').value);
+        const maxDays = parseInt(document.getElementById('maxFrequency').value);
+
+        if (minDays >= maxDays) {
+            // Auto-adjust max to be at least min + 1
+            document.getElementById('maxFrequency').value = minDays + 1;
         }
     }
 
     loadProfile() {
         // Load saved profile data into form fields
-        const fields = ['hairType', 'hairLength', 'washFrequency', 'shampoo', 'conditioner', 'treatments', 'notes'];
+        const fields = ['hairType', 'hairLength', 'shampoo', 'conditioner', 'treatments', 'notes'];
 
         fields.forEach(field => {
             const element = document.getElementById(field);
@@ -392,13 +422,29 @@ class HairWashTracker {
             }
         });
 
+        // Load frequency range
+        if (this.profile.minFrequency) {
+            document.getElementById('minFrequency').value = this.profile.minFrequency;
+        }
+        if (this.profile.maxFrequency) {
+            document.getElementById('maxFrequency').value = this.profile.maxFrequency;
+        }
+
+        // Load checkboxes
+        if (this.profile.eventWashReminder !== undefined) {
+            document.getElementById('eventWashReminder').checked = this.profile.eventWashReminder;
+        }
+        if (this.profile.autoScheduleWashes !== undefined) {
+            document.getElementById('autoScheduleWashes').checked = this.profile.autoScheduleWashes;
+        }
+
         // Update last wash info with frequency context
         this.updateLastWashInfo();
         this.updateNextWashInfo();
     }
 
     saveProfile() {
-        const fields = ['hairType', 'hairLength', 'washFrequency', 'shampoo', 'conditioner', 'treatments', 'notes'];
+        const fields = ['hairType', 'hairLength', 'shampoo', 'conditioner', 'treatments', 'notes'];
 
         fields.forEach(field => {
             const element = document.getElementById(field);
@@ -407,57 +453,101 @@ class HairWashTracker {
             }
         });
 
+        // Save frequency range
+        this.profile.minFrequency = parseInt(document.getElementById('minFrequency').value);
+        this.profile.maxFrequency = parseInt(document.getElementById('maxFrequency').value);
+
+        // Save checkboxes
+        this.profile.eventWashReminder = document.getElementById('eventWashReminder').checked;
+        this.profile.autoScheduleWashes = document.getElementById('autoScheduleWashes').checked;
+
         localStorage.setItem('hairProfile', JSON.stringify(this.profile));
         this.showSuccess('✨ Profile saved! Your hair routine is all set! 🛁');
         this.updateLastWashInfo();
         this.updateNextWashInfo();
     }
 
-    autoScheduleWashes() {
-        if (!this.profile.washFrequency) {
-            alert('🛁 Please set your preferred wash frequency in your profile first! Let\'s get your hair routine sorted! ✨');
+    smartAutoScheduleWashes() {
+        if (!this.profile.minFrequency || !this.profile.maxFrequency) {
+            alert('🛁 Please set your wash frequency range in your profile first! Let\'s get your hair routine sorted! ✨');
             return;
         }
 
-        const frequency = parseInt(this.profile.washFrequency);
+        const minDays = parseInt(this.profile.minFrequency);
+        const maxDays = parseInt(this.profile.maxFrequency);
         const today = new Date();
         const lastWashDate = this.getLastWashDate();
 
-        let nextWashDate;
-        if (lastWashDate) {
-            nextWashDate = new Date(lastWashDate);
-            nextWashDate.setDate(nextWashDate.getDate() + frequency);
-        } else {
-            nextWashDate = new Date(today);
-            nextWashDate.setDate(today.getDate() + 1);
-        }
+        // Get all upcoming events to plan around
+        const upcomingEvents = this.events.filter(event => {
+            const eventDate = new Date(event.date);
+            return eventDate > today && event.type === 'event';
+        }).sort((a, b) => new Date(a.date) - new Date(b.date));
 
-        // Schedule next 4 washes
-        for (let i = 0; i < 4; i++) {
-            const washDate = new Date(nextWashDate);
-            washDate.setDate(nextWashDate.getDate() + (frequency * i));
+        let currentDate = lastWashDate ? new Date(lastWashDate) : new Date(today);
+        const scheduledWashes = [];
 
-            const dateStr = this.formatDate(washDate);
+        // Schedule washes for the next 30 days
+        const endDate = new Date(today);
+        endDate.setDate(today.getDate() + 30);
 
-            // Check if wash is already scheduled
-            const existingWash = this.events.find(event =>
-                event.date === dateStr && event.type === 'wash'
-            );
+        while (currentDate < endDate) {
+            // Find next wash date within frequency range
+            const minNextWash = new Date(currentDate);
+            minNextWash.setDate(currentDate.getDate() + minDays);
 
-            if (!existingWash && washDate > today) {
-                this.events.push({
-                    id: Date.now() + i,
-                    date: dateStr,
-                    name: 'Scheduled hair wash',
-                    type: 'wash'
-                });
+            const maxNextWash = new Date(currentDate);
+            maxNextWash.setDate(currentDate.getDate() + maxDays);
+
+            // Check if there are any events that need pre-wash
+            let nextWashDate = null;
+
+            for (const event of upcomingEvents) {
+                const eventDate = new Date(event.date);
+                const dayBefore = new Date(eventDate);
+                dayBefore.setDate(eventDate.getDate() - 1);
+
+                // If event is within our wash window, schedule wash day before
+                if (dayBefore >= minNextWash && dayBefore <= maxNextWash) {
+                    nextWashDate = dayBefore;
+                    break;
+                }
             }
+
+            // If no event-driven wash, schedule at max frequency
+            if (!nextWashDate) {
+                nextWashDate = maxNextWash;
+            }
+
+            // Make sure we don't schedule in the past
+            if (nextWashDate > today) {
+                const dateStr = this.formatDate(nextWashDate);
+
+                // Check if wash is already scheduled
+                const existingWash = this.events.find(event =>
+                    event.date === dateStr && event.type === 'wash'
+                );
+
+                if (!existingWash) {
+                    scheduledWashes.push({
+                        id: Date.now() + scheduledWashes.length,
+                        date: dateStr,
+                        name: 'Smart scheduled wash',
+                        type: 'wash'
+                    });
+                }
+            }
+
+            currentDate = new Date(nextWashDate);
         }
+
+        // Add all scheduled washes
+        this.events.push(...scheduledWashes);
 
         this.saveData();
         this.renderCalendar();
         this.renderEvents();
-        this.showSuccess('🫧✨ Washes auto-scheduled! Your hair will be fabulous! 💆‍♀️');
+        this.showSuccess(`🫧✨ Smart-scheduled ${scheduledWashes.length} washes! Your hair will be fabulous! 💆‍♀️`);
     }
 
     getLastWashDate() {
@@ -492,13 +582,17 @@ class HairWashTracker {
             message += ` (${daysDiff} days ago)`;
         }
 
-        // Add frequency context if profile is set
-        if (this.profile.washFrequency) {
-            const frequency = parseInt(this.profile.washFrequency);
-            if (daysDiff >= frequency) {
-                message += ' 🛁✨ Time for a bubbly wash!';
-            } else if (daysDiff === frequency - 1) {
-                message += ' 🫧 Wash tomorrow? Get ready to sparkle!';
+        // Add frequency context if profile is set with new range system
+        if (this.profile.minFrequency && this.profile.maxFrequency) {
+            const minDays = parseInt(this.profile.minFrequency);
+            const maxDays = parseInt(this.profile.maxFrequency);
+
+            if (daysDiff >= maxDays) {
+                message += ' 🛁✨ Time for a wash! Hair getting gross!';
+            } else if (daysDiff >= minDays) {
+                message += ' 🫧 Could wash soon, but not urgent yet!';
+            } else if (daysDiff < minDays) {
+                message += ' ✨ Hair still fresh and clean!';
             }
         }
 
@@ -508,36 +602,63 @@ class HairWashTracker {
     updateNextWashInfo() {
         const nextWashText = document.getElementById('nextWashText');
 
-        if (!this.profile.washFrequency) {
-            nextWashText.textContent = 'Set your wash frequency in profile to see next wash reminder! 🛁';
+        if (!this.profile.minFrequency || !this.profile.maxFrequency) {
+            nextWashText.textContent = 'Set your wash frequency range in profile to see smart recommendations! 🛁';
             return;
         }
 
-        const frequency = parseInt(this.profile.washFrequency);
+        const minDays = parseInt(this.profile.minFrequency);
+        const maxDays = parseInt(this.profile.maxFrequency);
         const lastWashDate = this.getLastWashDate();
 
         if (!lastWashDate) {
-            nextWashText.textContent = 'Log your first wash to see next wash reminder! ✨';
+            nextWashText.textContent = 'Log your first wash to see smart wash recommendations! ✨';
             return;
         }
 
-        // Calculate next wash date
-        const nextWashDate = new Date(lastWashDate);
-        nextWashDate.setDate(nextWashDate.getDate() + frequency);
-
         const today = new Date();
-        const daysDiff = Math.floor((nextWashDate - today) / (1000 * 60 * 60 * 24));
+        const daysSinceWash = Math.floor((today - lastWashDate) / (1000 * 60 * 60 * 24));
 
-        let message = `Next hair wash: ${this.formatDisplayDate(this.formatDate(nextWashDate))}`;
+        // Calculate recommended wash window
+        const minWashDate = new Date(lastWashDate);
+        minWashDate.setDate(lastWashDate.getDate() + minDays);
 
-        if (daysDiff < 0) {
-            message = '🛁✨ Time for a wash! You\'re overdue for some bubbly self-care! 🫧';
-        } else if (daysDiff === 0) {
-            message = '🫧 Hair wash day is today! Time to get sudsy! ✨';
-        } else if (daysDiff === 1) {
-            message = '💆‍♀️ Hair wash tomorrow! Get ready to sparkle! ✨';
+        const maxWashDate = new Date(lastWashDate);
+        maxWashDate.setDate(lastWashDate.getDate() + maxDays);
+
+        // Check for upcoming events that might affect timing
+        const upcomingEvents = this.events.filter(event => {
+            const eventDate = new Date(event.date);
+            return eventDate > today && event.type === 'event';
+        }).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        let message = '';
+
+        if (daysSinceWash >= maxDays) {
+            message = '🛁✨ Time to wash! Hair is getting gross! 🫧';
+        } else if (daysSinceWash >= minDays) {
+            // Check if there's an event coming up
+            const nextEvent = upcomingEvents[0];
+            if (nextEvent) {
+                const eventDate = new Date(nextEvent.date);
+                const dayBefore = new Date(eventDate);
+                dayBefore.setDate(eventDate.getDate() - 1);
+
+                if (dayBefore <= maxWashDate) {
+                    message = `💆‍♀️ Wash ${this.formatDisplayDate(this.formatDate(dayBefore))} for ${nextEvent.name}! ✨`;
+                } else {
+                    message = `🫧 Can wash anytime until ${this.formatDisplayDate(this.formatDate(maxWashDate))} 🗓️`;
+                }
+            } else {
+                message = `🫧 Can wash anytime until ${this.formatDisplayDate(this.formatDate(maxWashDate))} 🗓️`;
+            }
         } else {
-            message += ` (in ${daysDiff} days) 🗓️`;
+            const daysUntilMin = Math.ceil((minWashDate - today) / (1000 * 60 * 60 * 24));
+            if (daysUntilMin > 0) {
+                message = `✨ Hair still fresh! Can wait ${daysUntilMin} more day${daysUntilMin > 1 ? 's' : ''} 🌟`;
+            } else {
+                message = '🫧 Ready to wash when you want! ✨';
+            }
         }
 
         nextWashText.textContent = message;
